@@ -1,8 +1,5 @@
-'use strict'
-
-let app = require('express')();
-let http = require('http').Server(app);
-let io = require('socket.io')(http);
+let superagent = require('superagent');
+let API = 'https://envpqu7svk.execute-api.us-east-1.amazonaws.com/dev';
 let clients = [];
 let nicknames = [];
 
@@ -32,7 +29,16 @@ io.on('connection', function(socket){
   socket.on('chat message', (data) => {
     io.in(data.room).emit('chat message', {room: socket.rooms, moniker: socket.nickname, content: data.data});
     console.log(socket.nickname, ' said ', data.data, ' in ', data.room);
-    //console.log(socket);
+    superagent.post(`${API}/messages`)
+    .set('Content-Type', 'application/json')
+    .send(JSON.stringify({
+      moniker: socket.nickname,
+      content: data.data,
+      room: data.room,
+      timestamp: socket.handshake.time || ''
+    }))
+    .then(console.log('message confirmation stuff goes here'))
+    .catch(console.log('error handling goes here'));
   });
 
   socket.on('disconnect', function(data){
@@ -47,4 +53,5 @@ io.on('connection', function(socket){
 http.listen(3000, function(){
   console.log('listening on *:3000');
 });
+
 
