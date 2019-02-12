@@ -1,5 +1,9 @@
+var app = require('express')();
+var http = require('http').Server(app);
+var io = require('socket.io')(http);
+
 let superagent = require('superagent');
-let API = 'https://envpqu7svk.execute-api.us-east-1.amazonaws.com/dev';
+let API = 'https://3ulogk4k2e.execute-api.us-east-1.amazonaws.com/dev';
 let clients = [];
 let nicknames = [];
 
@@ -29,7 +33,7 @@ io.on('connection', function(socket){
   socket.on('chat message', (data) => {
     io.in(data.room).emit('chat message', {room: socket.rooms, moniker: socket.nickname, content: data.data});
     console.log(socket.nickname, ' said ', data.data, ' in ', data.room);
-    superagent.post(`${API}/messages`)
+    superagent.post(`${API}/chatmessages`)
     .set('Content-Type', 'application/json')
     .send(JSON.stringify({
       moniker: socket.nickname,
