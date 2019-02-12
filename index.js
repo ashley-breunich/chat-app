@@ -1,3 +1,5 @@
+'use strict';
+
 var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
@@ -32,9 +34,9 @@ io.on('connection', function(socket){
 
   socket.on('chat message', (data) => {
     const currentTime = Date.now(); 
-    let time = new Intl.DateTimeFormat('en-US', {year: 'numeric', month: '2-digit',day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'}).format(currentTime);
-    io.in(data.room).emit('chat message', {room: socket.rooms, moniker: socket.nickname, content: data.data});
-    console.log(socket.nickname, ' said ', data.data, ' in ', data.room, '   ', time);
+    let time = new Intl.DateTimeFormat('en-US', {year: 'numeric', month: '2-digit',day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'}).format(currentTime);    
+    io.in(data.room).emit('chat message', {room: socket.rooms, moniker: socket.nickname, content: data.data, timestamp: time});
+    console.log(socket.nickname, ' said ', data.data, ' in ', data.room);
     superagent.post(`${API}/chatmessages`)
     .set('Content-Type', 'application/json')
     .send(JSON.stringify({
