@@ -70,29 +70,34 @@ io.on('connection', function(socket){
   });
 
   socket.on('room', function(room) {
-    
-    socket.leave(room.previous);
-
-    socket.join(room.current);
-    console.log(socket.nickname, ' is in ', room);
+    // socket.leave(room.previous, function () {
+    //     console.log('left room', room.previous);
+    //     console.log('Socket now in rooms', socket.rooms);
+    // });
+    socket.room = room.current;
+    socket.join(room.current, function() {
+        console.log('socket.room', socket.room);
+    });
   });
 
-  socket.on('chat message', (data) => {
-    console.log(socket.nickname, ' is still in ', data.room);
-    const currentTime = Date.now(); 
-    let time = new Intl.DateTimeFormat('en-US', {year: 'numeric', month: '2-digit',day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'}).format(currentTime);    
-    io.in(data.room).emit('chat message', {room: socket.rooms, moniker: socket.nickname, content: data.data, timestamp: time});
-    console.log(socket.nickname, ' said ', data.data, ' in ', data.room);
-    console.log(`${data.room + 'Chats'}`[0]);
-    superagent.post(`${API}`)
+  socket.on('submit', (data) => {
+    console.log('submit message', data);
+    const currentTime = Date.now();
+    let time = new Intl.DateTimeFormat('en-US', {year: 'numeric', month: '2-digit',day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'}).format(currentTime);
+    
+    console.log('specific room', data.room)
+    
+    io.sockets.in(socket.room).emit('chat', {room: data.room, moniker: socket.nickname, content: data.data, timestamp: time});
+    superagent.post(`${API}/chatmessages`)
     .set('Content-Type', 'application/json')
     .send(JSON.stringify({
       moniker: socket.nickname,
-      message: data.data,
+      content: data.data,
       room: data.room,
-      timestamp: time || ''
+      timestamp: socket.handshake.time || ''
     }))
     .then(console.log('The last message was posted correctly'))
+    .catch(error => console.log(error));
   });
 
   socket.on('disconnect', function(data){
