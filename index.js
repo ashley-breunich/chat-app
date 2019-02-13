@@ -23,11 +23,11 @@ function getChats () {
   superagent.get(`${API}`).then((results) => {
    
     console.log(results.body.Items);
+    chats = 1;
   })
-  .catch(error => console.log(error));
-  
-  
+  //.catch(error => console.log(error));  
 };
+
 /*
 function sortChats () {
   for( let i = 0;  i < chats.length; i++) {
@@ -88,7 +88,7 @@ io.on('connection', function(socket){
     console.log('specific room', data.room)
     
     io.sockets.in(socket.room).emit('chat', {room: data.room, moniker: socket.nickname, content: data.data, timestamp: time});
-    superagent.post(`${API}/chatmessages`)
+    superagent.post(`${API}`)
     .set('Content-Type', 'application/json')
     .send(JSON.stringify({
       moniker: socket.nickname,
@@ -97,7 +97,7 @@ io.on('connection', function(socket){
       timestamp: socket.handshake.time || ''
     }))
     .then(console.log('The last message was posted correctly'))
-    .catch(error => console.log(error));
+    //.catch(error => console.log(error));
   });
 
   socket.on('disconnect', function(data){
