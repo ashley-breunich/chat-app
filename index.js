@@ -8,45 +8,54 @@ let API = 'https://67fkyn1o09.execute-api.us-east-2.amazonaws.com/dev/messages';
 let clients = [];
 let nicknames = [];
 let chats = [];
+let allChats = [];
 let generalChats = [];
 let sportsChats = [];
 let codingChats = [];
 let fashionChats = [];
 
-function updateChats() {
-  getChats();
-  //sortChats();
-  //reduceChats();
-}
-
-function getChats () {
+function updateChats () {
   superagent.get(`${API}`).then((results) => {
-   
-    console.log(results.body.Items);
-    chats = 1;
+    for(let i=0; i<results.body.Items.length; i++) {
+      if(results.body.Items[i].message) {
+        allChats.push(results.body.Items[i]);
+      }      
+    }
+    getChats();
   })
   //.catch(error => console.log(error));  
 };
 
-/*
-function sortChats () {
-  for( let i = 0;  i < chats.length; i++) {
-    if(chats[i].room = 'general') {
-      generalChats.push(chats[i]);
-    } else if(chats[i].room = 'sports') {
-      sportsChats.push(chats[i]);
-    } else if(chats[i].room = 'coding') {
-      codingChats.push(chats[i]);
-    } else if(chats[i].room = 'sports') {
-      fashionChats.push(chats[i]);
+
+function getChats () {
+  for( let i = 0;  i < allChats.length; i++) {
+    if(allChats[i].room === 'fashion') {
+      fashionChats.push(allChats[i]) 
+    } else if(allChats[i].room === 'sports') {
+      sportsChats.push(allChats[i])
+    } else if(allChats[i].room === 'coding') {
+      codingChats.push(allChats[i])
+    } else if(allChats[i].room === 'general') {
+      generalChats.push(allChats[i])
     }
-  }
+  };
+  console.log('general ', generalChats);
+  console.log('sports ', sportsChats);
+  console.log('coding ', codingChats);
+  console.log('fashion ', fashionChats);
+  //sortChats();
 };
 
-function reduceChats () {
-  generalChats.map(timestamp, )
+
+
+/*
+//Sort by time and reduce to 15
+function sortChats () {
+  generalChats.sort(timestamp, )
 }
 */
+
+
 app.get('/', function(req, res){
   res.sendFile(__dirname);
 });
@@ -55,6 +64,7 @@ io.on('connection', function(socket){
   clients.push(socket);
 
   if(chats.length === 0) {
+    chats = 1;
     updateChats();
   }
 
@@ -70,13 +80,13 @@ io.on('connection', function(socket){
   });
 
   socket.on('room', function(room) {
-    // socket.leave(room.previous, function () {
-    //     console.log('left room', room.previous);
-    //     console.log('Socket now in rooms', socket.rooms);
-    // });
-    socket.room = room.current;
     socket.join(room.current, function() {
+        socket.room = room.current;
         console.log('socket.room', socket.room);
+    });
+    socket.leave(room.previous, function () {
+        console.log('left room', room.previous);
+        console.log('Socket now in rooms', socket.rooms);
     });
   });
 
@@ -87,14 +97,14 @@ io.on('connection', function(socket){
     
     console.log('specific room', data.room)
     
-    io.sockets.in(socket.room).emit('chat', {room: data.room, moniker: socket.nickname, content: data.data, timestamp: time});
+    io.sockets.in(data.room).emit('chat', {room: data.room, moniker: socket.nickname, content: data.data, timestamp: time});
     superagent.post(`${API}`)
     .set('Content-Type', 'application/json')
     .send(JSON.stringify({
       moniker: socket.nickname,
-      content: data.data,
+      message: data.data,
       room: data.room,
-      timestamp: socket.handshake.time || ''
+      timestamp: time || ''
     }))
     .then(console.log('The last message was posted correctly'))
     //.catch(error => console.log(error));
