@@ -13,6 +13,7 @@ let generalChats = [];
 let sportsChats = [];
 let codingChats = [];
 let fashionChats = [];
+let PORT = process.env.PORT || 3000;
 
 function updateChats () {
   superagent.get(`${API}`).then((results) => {
@@ -119,6 +120,6 @@ io.on('connection', function(socket){
 
 });
 
-http.listen(3000, function(){
-  console.log('listening on *:3000');
+http.listen(PORT, function(){
+  console.log('listening on',PORT);
 });
