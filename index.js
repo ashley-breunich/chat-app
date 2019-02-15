@@ -63,10 +63,6 @@ io.on('connection', function(socket){
     function update (array, room) {
       superagent.get(`${API}`).query(`room=${room}`).then((results) => {
         for(let i=0; i<results.body.length; i++) {
-          /*
-          let newTime = new Intl.DateTimeFormat('en-US', {year: 'numeric', month: '2-digit',day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'}).format(results.body[i].timestamp);
-          results.body[i].timestamp = newTime;
-          */
           array.push(results.body[i]);     
         }
         while(array.length > 15) {
@@ -91,10 +87,9 @@ io.on('connection', function(socket){
 
   socket.on('submit', (data) => {
     console.log(socket.nickname, ' said ', data, ' in ', data.room);
-    const currentTime = Date.now();
-    let time = new Intl.DateTimeFormat('en-US', {year: 'numeric', month: '2-digit',day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'}).format(currentTime);
 
-    socket.send('Hello everyone');
+    let date = new Date();
+    let time = date.getTime();
     
     io.sockets.in(data.room).emit('chat', {room: data.room, moniker: socket.nickname, content: data.data, timestamp: time});
     superagent.post(`${API}`)
@@ -105,7 +100,6 @@ io.on('connection', function(socket){
       message: data.data      
     })
     .then(console.log('The last message was posted correctly'))
-    //.catch(error => console.log(error));
   });
 
   socket.on('disconnect', function(data){
@@ -120,4 +114,3 @@ io.on('connection', function(socket){
 http.listen(PORT, function(){
   console.log('listening on ', PORT);
 });
-
