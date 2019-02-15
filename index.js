@@ -77,7 +77,7 @@ io.on('connection', function(socket){
   
     function sendData (array, room) {
       for( let i = array.length - 1; i >= 0; i--) {
-        io.sockets.in(room).emit('chat', {room: room, moniker: array[i].nickname, content: array[i].message, timestamp: array[i].timestamp});
+        io.sockets.in(room).emit('chat', {room: room, moniker: array[i].moniker, content: array[i].message, timestamp: array[i].timestamp});
       }
       
     }
