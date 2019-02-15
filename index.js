@@ -7,18 +7,11 @@ let superagent = require('superagent');
 let API = 'https://4n2vfdefsk.execute-api.us-east-2.amazonaws.com/dev/chatmessages';
 let clients = [];
 let nicknames = [];
-let chats = [];
-let allChats = [];
 let generalChats = [];
 let sportsChats = [];
 let codingChats = [];
 let fashionChats = [];
-
-
-
-function changeTime () {
-  console.log(sportsChats);
-}
+const PORT = process.env.PORT || 3000;
 
 
 app.get('/', function(req, res){
@@ -43,31 +36,48 @@ io.on('connection', function(socket){
     socket.join(room.current, function() {
       socket.room = room.current;
       console.log(socket.nickname, ' is in room ', socket.room);
+      switch(socket.room) {
+        case 'sports':
+          sportsChats = [];
+          update(sportsChats, 'sports');
+          break;
+        case 'general':
+          generalChats = [];
+          update(generalChats, 'general');
+          break;
+        case 'fashion':
+          fashionChats = [];
+          update(fashionChats, 'fashion');
+          break;
+        case 'coding':
+          codingChats = [];
+          update(codingChats, 'coding');
+          break;
+        default:
+          return null;
+      }
     });
 
-    sendData(socket);
-    if(socket.room = 'sports' && sportsChats.length === 0) {
-      updateSports(socket);
-      console.log(sportsChats.length);
-      //sendData();
-    }
+    
 
-    function updateSports (socket) {
-      superagent.get(`${API}`).query('room=sports').then((results) => {
+    function update (array, room) {
+      superagent.get(`${API}`).query(`room=${room}`).then((results) => {
         for(let i=0; i<results.body.length; i++) {
           let newTime = new Intl.DateTimeFormat('en-US', {year: 'numeric', month: '2-digit',day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'}).format(results.body[i].timestamp);
           results.body[i].timestamp = newTime;
-          sportsChats.push(results.body[i]);     
+          array.push(results.body[i]);     
         }
-        sendData(socket);
-        console.log(sportsChats.length);
+        while(array.length > 15) {
+          array.pop();
+        }
+        sendData(array, room);
       })
-      //.catch(error => console.log(error));  
+      .catch(error => console.log(error));  
     };
   
-    function sendData (socket) {
-      for( let i = sportsChats.length - 1; i >= 0; i--) {
-        io.sockets.in(socket.room).emit('chat', {room: socket.room, moniker: sportsChats[i].nickname, content: sportsChats[i].message, timestamp: sportsChats[i].timestamp});
+    function sendData (array, room) {
+      for( let i = array.length - 1; i >= 0; i--) {
+        io.sockets.in(room).emit('chat', {room: room, moniker: array[i].nickname, content: array[i].message, timestamp: array[i].timestamp});
       }
       
     }
@@ -105,6 +115,7 @@ io.on('connection', function(socket){
 
 });
 
-http.listen(3000, function(){
-  console.log('listening on *:3000');
+http.listen(PORT, function(){
+  console.log('listening on ', PORT);
 });
+
