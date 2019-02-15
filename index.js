@@ -63,8 +63,10 @@ io.on('connection', function(socket){
     function update (array, room) {
       superagent.get(`${API}`).query(`room=${room}`).then((results) => {
         for(let i=0; i<results.body.length; i++) {
+          /*
           let newTime = new Intl.DateTimeFormat('en-US', {year: 'numeric', month: '2-digit',day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'}).format(results.body[i].timestamp);
           results.body[i].timestamp = newTime;
+          */
           array.push(results.body[i]);     
         }
         while(array.length > 15) {
