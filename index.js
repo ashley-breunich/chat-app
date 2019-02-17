@@ -104,13 +104,15 @@ io.on('connection', function(socket){
 
   socket.on('disconnect', function(data){
     console.log(socket.nickname, 'disconnected');
-    //delete clients[socket.id];
+    delete clients[socket.id];
     if(!socket.nickname) return;
     nicknames.splice(nicknames.indexOf(socket.nickname), 1);
   });
 
 });
 
+
 http.listen(PORT, function(){
   console.log('listening on ', PORT);
 });
+
