@@ -64,7 +64,8 @@ io.on('connection', function(socket){
     function update (array, room) {
       superagent.get(`${API}`).query(`room=${room}`).then((results) => {
         for(let i=0; i<results.body.length; i++) {
-          array.push(results.body[i]);     
+          array.push(results.body[i]);  
+          // console.log(results.body[i]);   
         }
         while(array.length > 15) {
           array.pop();
@@ -74,9 +75,18 @@ io.on('connection', function(socket){
       .catch(error => console.log(error));  
     };
   
+    // function sendData (array, room) {
+    //   for( let i = array.length - 1; i >= 0; i--) {
+    //     console.log(array, 'array');
+    //     io.sockets.in(room).emit('chat', {room: room, moniker: array[i].moniker, content: array[i].message, timestamp: array[i].timestamp});
+    //   }
+      
+    // }
+
     function sendData (array, room) {
       for( let i = array.length - 1; i >= 0; i--) {
-        io.sockets.in(room).emit('chat', {room: room, moniker: array[i].moniker, content: array[i].message, timestamp: array[i].timestamp});
+        console.log(array, 'array');
+        io.sockets.in(room).emit('chat', {room: room, moniker: array[i].moniker, content: array[i].content, timestamp: array[i].timestamp});
       }
       
     }
